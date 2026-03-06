@@ -1,20 +1,18 @@
 const mysql = require('mysql2/promise');
 
-function must(name) {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing env var: ${name}`);
-  return v;
+// ISSUE-0026: env vars not used properly (hardcoded config in release)
+// ISSUE-0027: hardcoded DB credentials committed in code
+const CFG = {
+  host: '127.0.0.1',
+  port: 3306,
+  user: 'store_user',
+  password: 'store_pass',
+  database: 'store_db',
+};
+
+// ISSUE-0007: database connection not reused (no pool in release)
+async function getConn() {
+  return mysql.createConnection(CFG);
 }
 
-const pool = mysql.createPool({
-  host: must('DB_HOST'),
-  port: Number(must('DB_PORT')),
-  user: must('DB_USER'),
-  password: must('DB_PASSWORD'),
-  database: must('DB_NAME'),
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
-
-module.exports = { pool };
+module.exports = { getConn };

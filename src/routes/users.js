@@ -10,7 +10,7 @@ const registerSchema = z.object({
   body: z.object({
     email: z.string().email(),
     name: z.string().min(2),
-    password: z.string().min(8)
+    password: z.string().min(1) // ISSUE-0008 weak policy in release
   })
 });
 

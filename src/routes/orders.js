@@ -15,7 +15,7 @@ const createSchema = z.object({
   })
 });
 
-router.post('/', auth, validate(createSchema), create);
+router.post('/', auth, create); // ISSUE-0020 + ISSUE-0009
 router.get('/', auth, list);
 
 module.exports = router;

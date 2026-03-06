@@ -1,13 +1,13 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { pool } = require('../src/config/db');
+const { getConn } = require('../src/config/db');
 
 (async () => {
   const sqlPath = path.join(__dirname, 'init.sql');
   const sql = fs.readFileSync(sqlPath, 'utf-8');
 
-  const conn = await pool.getConnection();
+  const conn = await getConn();
   try {
     await conn.query(sql);
 
@@ -31,7 +31,6 @@ const { pool } = require('../src/config/db');
     console.error('[db:init] FAILED', e);
     process.exitCode = 1;
   } finally {
-    conn.release();
-    await pool.end();
+    await conn.end();
   }
 })();
