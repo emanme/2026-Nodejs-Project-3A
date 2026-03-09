@@ -19,9 +19,15 @@ app.use((req, res, next) => {
   let data = '';
   req.on('data', chunk => data += chunk);
   req.on('end', () => {
-    if (data && (req.headers['content-type'] || '').includes('application/json')) {
-      // no try/catch -> can crash process
-      req.body = JSON.parse(data);
+    const contentType = req.headers['content-type'] || '';
+    if (data && contentType.includes('application/json')) {
+      try {
+        // This is the safety net
+        req.body = JSON.parse(data);
+      } catch (err) {
+        // Instead of crashing, we return a 400 error to the client
+        return res.status(400).send('Invalid JSON payload');
+      }
     }
     next();
   });
