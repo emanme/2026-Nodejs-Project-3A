@@ -37,8 +37,29 @@ app.use('/products', products);
 app.use('/orders', orders);
 
 // ISSUE-0016/0030: error handling inconsistent and stack logging not improved
+//app.use((err, req, res, next) => {
+  //res.status(500).send('Server error');
+//});
+
+// Improved Error Logging Middleware - Issue 0030
 app.use((err, req, res, next) => {
-  res.status(500).send('Server error');
+  const statusCode = err.statusCode || 500;
+  const timestamp = new Date().toISOString();
+  
+  // Detailed log for the terminal
+  console.error(`[${timestamp}] ${req.method} ${req.url} - Error: ${err.message}`);
+  
+  // Log the stack trace only in development mode to help debugging
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
+
+  res.status(statusCode).json({
+    status: 'error',
+    message: err.message,
+    // Include stack trace in the response if not in production
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+  });
 });
 
 const port = Number(process.env.PORT || 3000);
