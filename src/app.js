@@ -28,6 +28,10 @@ app.use((req, res, next) => {
 });
 
 // ISSUE-0023: request logging missing in release (no morgan)
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 // ISSUE-0028: rate limiter missing in release
 
 // ISSUE-0035: /health endpoint missing in release
