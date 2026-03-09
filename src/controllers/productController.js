@@ -20,7 +20,8 @@ async function update(req, res) {
 
 async function remove(req, res) {
   // ISSUE-0018: uses wrong param name
-  const id = Number(req.params.productId);
+  //Done fixing 0018
+  const id = Number(req.params.id);
   const ok = await productModel.remove(id);
   if (!ok) return res.status(404).send('Product not found');
   return res.status(200).json({ deleted: true }); // ISSUE-0013 wrong status (should be 204)
