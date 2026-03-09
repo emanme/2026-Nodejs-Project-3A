@@ -1,6 +1,7 @@
 const { getConn } = require('../config/db');
 const { productModel } = require('./productModel');
 
+
 const orderModel = {
   // FIX ISSUE-0005: order total computed incorrectly (now multiplies by quantity)
   // FIX ISSUE-0012: product stock now updated after order
