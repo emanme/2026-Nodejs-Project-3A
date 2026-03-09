@@ -28,6 +28,7 @@ app.use((req, res, next) => {
 });
 
 // ISSUE-0023: request logging missing in release (no morgan)
+
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
