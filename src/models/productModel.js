@@ -1,22 +1,40 @@
 const { getConn } = require('../config/db');
 
 const productModel = {
-  // ISSUE-0014: no pagination in release (ignores page/limit)
-  async list({ page, limit, q }) {
+  // ISSUE-0014 FIX: Added pagination logic
+  async list({ page = 1, limit = 10, q }) {
     const conn = await getConn();
     try {
+      // 1. I-convert ang page ug limit ngadto sa numbers, ug i-compute ang offset
+      const numPage = parseInt(page, 10) || 1;
+      const numLimit = parseInt(limit, 10) || 10;
+      const offset = (numPage - 1) * numLimit;
+
       const like = `%${q}%`;
       const where = q ? 'WHERE name LIKE ? OR category LIKE ?' : '';
-      const params = q ? [like, like] : [];
+      
+      // 2. Kuhaon ang total count sa products aron sakto ang 'total' nga e-return
+      const countParams = q ? [like, like] : [];
+      const [countRows] = await conn.query(
+        `SELECT COUNT(*) as count FROM products ${where}`, 
+        countParams
+      );
+      const totalItems = countRows[0].count;
 
+      // 3. I-apil ang numLimit ug offset parameters para sa main query
+      const params = q ? [like, like, numLimit, offset] : [numLimit, offset];
+
+      // 4. I-add ang LIMIT ug OFFSET sa SQL Query
       const [rows] = await conn.query(
         `SELECT id, name, category, price, stock, image_url, created_at
          FROM products ${where}
-         ORDER BY id DESC`,
+         ORDER BY id DESC
+         LIMIT ? OFFSET ?`,
         params
       );
 
-      return { page, limit, total: rows.length, items: rows };
+      // 5. I-return ang sakto nga pagination data
+      return { page: numPage, limit: numLimit, total: totalItems, items: rows };
     } finally {
       await conn.end();
     }
