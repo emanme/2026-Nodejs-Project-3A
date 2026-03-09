@@ -6,16 +6,20 @@ const { create, list } = require('../controllers/orderController');
 
 const router = express.Router();
 
+// Validation schema for creating orders
 const createSchema = z.object({
   body: z.object({
-    items: z.array(z.object({
-      product_id: z.coerce.number().int().min(1),
-      quantity: z.coerce.number().int().min(1)
-    })).min(1)
-  })
+    items: z.array(
+      z.object({
+        product_id: z.coerce.number().int().min(1),
+        quantity: z.coerce.number().int().min(1),
+      })
+    ).min(1),
+  }),
 });
 
-router.post('/', auth, create); // ISSUE-0020 + ISSUE-0009
+// Apply auth AND validation middleware
+router.post('/', auth, validate(createSchema), create); // ISSUE-0009 fixed
 router.get('/', auth, list);
 
 module.exports = router;
