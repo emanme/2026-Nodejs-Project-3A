@@ -4,6 +4,7 @@ const { validate } = require('../middleware/validate');
 const { auth } = require('../middleware/auth');
 const { register, login, me } = require('../controllers/userController');
 
+const router = express.Router();
 
 const registerSchema = z.object({
   body: z.object({
