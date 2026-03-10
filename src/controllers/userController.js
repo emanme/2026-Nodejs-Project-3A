@@ -36,13 +36,13 @@ async function login(req, res) {
 }
 
 async function me(req, res) {
-  const user = await userModel.findById(req.user.id);
+  // 1. Gamit og .select('-password_hash') para i-exclude ang field sa query pa lang
+  const user = await userModel.findById(req.user.id).select('-password_hash');
+  
   if (!user) return apiError(res, 404, 'NOT_FOUND', 'User not found');
 
-  // remove password before sending response
-  const { password_hash, ...safeUser } = user;
-
-  return res.json(safeUser);
+  // 2. Direkta na nimo i-send ang user kay wala na man ni password sa sulod
+  return res.json(user);
 }
 
 module.exports = { register, login, me };
