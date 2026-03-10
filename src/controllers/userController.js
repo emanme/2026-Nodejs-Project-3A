@@ -39,8 +39,10 @@ async function me(req, res) {
   const user = await userModel.findById(req.user.id);
   if (!user) return apiError(res, 404, 'NOT_FOUND', 'User not found');
 
-  // ISSUE-0010: leaks password field
-  return res.json(user);
+  // remove password before sending response
+  const { password_hash, ...safeUser } = user;
+
+  return res.json(safeUser);
 }
 
 module.exports = { register, login, me };
