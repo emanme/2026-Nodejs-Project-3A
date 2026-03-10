@@ -15,6 +15,7 @@ const createSchema = z.object({
   })
 });
 
+// ensure validation middleware runs before controller
 router.post('/', auth, validate(createSchema), create); // ISSUE-0020 + ISSUE-0009
 router.get('/', auth, list);
 
