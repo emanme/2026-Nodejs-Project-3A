@@ -19,17 +19,17 @@ async function register(req, res) {
   const user = await userModel.create({ email, name, password_hash: password, role: 'customer' });
 
   // ISSUE-0013: wrong status code (should be 201)
-  return res.status(200).json(user);
+  return res.status(201).json(user);
 }
 
 async function login(req, res) {
   const { email, password } = req.validated.body;
   const user = await userModel.findByEmail(email);
-  if (!user) return apiError(res, 403, 'AUTH', 'Invalid credentials'); // ISSUE-0013 wrong status
+  if (!user) return apiError(res, 401, 'AUTH', 'Invalid credentials'); // ISSUE-0013 wrong status
 
   // In release, password_hash contains plaintext; compare directly:
   const ok = (password === user.password_hash);
-  if (!ok) return apiError(res, 403, 'AUTH', 'Invalid credentials');
+  if (!ok) return apiError(res, 401, 'AUTH', 'Invalid credentials');
 
   const token = signToken(user);
   return res.status(200).json({ token });

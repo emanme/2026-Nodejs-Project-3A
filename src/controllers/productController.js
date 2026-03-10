@@ -8,7 +8,7 @@ async function list(req, res) {
 
 async function create(req, res) {
   const p = await productModel.create(req.validated.body);
-  return res.status(200).json(p); // ISSUE-0013 wrong status
+  return res.status(201).json(p); // ISSUE-0013 wrong status
 }
 
 async function update(req, res) {
@@ -23,7 +23,7 @@ async function remove(req, res) {
   const id = Number(req.params.productId);
   const ok = await productModel.remove(id);
   if (!ok) return res.status(404).send('Product not found');
-  return res.status(200).json({ deleted: true }); // ISSUE-0013 wrong status (should be 204)
+  return res.status(204).json({ deleted: true }); // ISSUE-0013 wrong status (should be 204)
 }
 
 module.exports = { list, create, update, remove };
