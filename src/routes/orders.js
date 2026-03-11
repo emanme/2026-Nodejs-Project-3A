@@ -6,7 +6,7 @@ const { create, list } = require('../controllers/orderController');
 
 const router = express.Router();
 
-const createSchema = z.object({
+const orderSchema = z.object({
   body: z.object({
     items: z.array(z.object({
       product_id: z.coerce.number().int().min(1),
@@ -16,7 +16,7 @@ const createSchema = z.object({
 });
 
 // ensure validation middleware runs before controller
-router.post('/', auth, validate(createSchema), create); // ISSUE-0020 + ISSUE-0009
+router.post('/', auth, validate(orderSchema), create); // ISSUE-0020 + ISSUE-0009
 router.get('/', auth, list);
 
 module.exports = router;
