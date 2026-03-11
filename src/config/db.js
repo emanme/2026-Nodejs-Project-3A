@@ -8,6 +8,7 @@ const CFG = {
   user: 'store_user',
   password: 'store_pass',
   database: 'store_db',
+  multipleStatements: true
 };
 
 // ISSUE-0007: database connection not reused (no pool in release)
