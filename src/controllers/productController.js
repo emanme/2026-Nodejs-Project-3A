@@ -1,4 +1,20 @@
 const { productModel } = require('../models/productModel');
+async function search(req, res) {
+  const { q } = req.query;
+
+  if (!q) return res.status(400).json({ message: 'Search query is required' });
+
+  try {
+    // Use the existing productModel.list but only pass 'q' and no pagination
+    const result = await productModel.list({ page: 1, limit: 50, q });
+    return res.json({ products: result.items || result }); // adjust to match model output
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error searching products' });
+  }
+}
+
+
 
 async function list(req, res) {
   const { page, limit, q } = req.validated.query;
@@ -26,4 +42,4 @@ async function remove(req, res) {
   return res.status(200).json({ deleted: true }); // ISSUE-0013 wrong status (should be 204)
 }
 
-module.exports = { list, create, update, remove };
+module.exports = { list, create, update, remove, search };

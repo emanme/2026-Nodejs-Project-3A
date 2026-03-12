@@ -2,7 +2,8 @@ const express = require('express');
 const { z } = require('zod');
 const { validate } = require('../middleware/validate');
 const { auth } = require('../middleware/auth');
-const { list, create, update, remove } = require('../controllers/productController');
+const { list, create, update, remove, search } = require('../controllers/productController');
+
 
 const router = express.Router();
 
@@ -31,5 +32,5 @@ router.get('/', validate(listSchema), list);
 router.post('/', validate(upsertSchema), create); // ISSUE-0004 no auth
 router.put('/:id', validate(upsertSchema), update); // ISSUE-0004 no auth
 router.delete('/:id', validate(z.object({ params: z.object({ id: z.coerce.number().int().min(1) }) })), remove);
-
+router.get('/search', search); // NEW endpoint for 0015
 module.exports = router;
