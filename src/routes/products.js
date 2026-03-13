@@ -32,12 +32,9 @@ router.get('/search', validate(listSchema), list);
 
 // Product list endpoint
 router.get('/', validate(listSchema), list);
-
-// Create product
-router.post('/', validate(upsertSchema), create); // ISSUE-0004 no auth
-
-// Update product
-router.put('/:id', validate(upsertSchema), update); // ISSUE-0004 no auth
+router.post('/', auth, validate(upsertSchema), create); //ISSUE-0004 fixed
+router.put('/:id', auth, validate(upsertSchema), update); //ISSUE-0004 fixed
+router.delete('/:id', validate(z.object({ params: z.object({ id: z.coerce.number().int().min(1) }) })), remove);
 
 // Delete product
 router.delete(
