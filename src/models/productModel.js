@@ -36,21 +36,29 @@ const productModel = {
   },
 
   async create({ name, category, price, stock, image_url }) {
-    const conn = await getConn();
-    try {
-      // ISSUE-0003: negative prices allowed (no model-level validation)
-      const [r] = await conn.query(
-        `INSERT INTO products (name, category, price, stock, image_url) VALUES (?, ?, ?, ?, ?)`,
-        [name, category, price, stock, image_url ?? null]
-      );
-      const [rows] = await conn.query(`SELECT * FROM products WHERE id=?`, [r.insertId]);
-      return rows[0];
-    } finally {
-      await conn.end();
-    }
-  },
+  if (price < 0) {
+    throw new Error('Price cannot be negative');
+  }
 
+  const conn = await getConn();
+  try {
+    // ISSUE-0003: negative prices allowed (no model-level validation)
+    const [r] = await conn.query(
+      `INSERT INTO products (name, category, price, stock, image_url) VALUES (?, ?, ?, ?, ?)`,
+      [name, category, price, stock, image_url ?? null]
+    );
+    const [rows] = await conn.query(`SELECT * FROM products WHERE id=?`, [r.insertId]);
+    return rows[0];
+   } finally {
+     await conn.end();
+   }
+  },
+ 
   async update(id, patch) {
+     if (patch.price < 0) {
+    throw new Error('Price cannot be negative');
+    }
+    
     const conn = await getConn();
     try {
       const [r] = await conn.query(
