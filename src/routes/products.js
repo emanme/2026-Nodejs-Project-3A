@@ -18,6 +18,9 @@ const upsertSchema = z.object({
   body: z.object({
     name: z.string().min(2),
     category: z.string().min(1) // ISSUE-0025,
+
+    category: z.string().min(2).max(50).optional() // ISSUE-0025,
+    release
     price: z.coerce.number() // ISSUE-0003,
     stock: z.coerce.number().int().min(0),
     image_url: z.string().url().optional().nullable()
