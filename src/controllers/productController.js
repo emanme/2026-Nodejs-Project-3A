@@ -23,7 +23,8 @@ async function update(req, res) {
 }
 
 async function remove(req, res) {
-  const id = Number(req.params.productId);
+  // ISSUE-0018: uses wrong param name
+  const id = Number(req.params.id);//Fixed 0018 issue
   const ok = await productModel.remove(id);
 
   // Standardized error response

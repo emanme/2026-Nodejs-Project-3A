@@ -1,7 +1,6 @@
 const { getConn } = require('../config/db');
 const { productModel } = require('./productModel');
 
-
 const orderModel = {
   // FIX ISSUE-0005: order total computed incorrectly (now multiplies by quantity)
   // FIX ISSUE-0012: product stock now updated after order
@@ -19,8 +18,8 @@ const orderModel = {
         // ISSUE-0009: Validation for non-positive quantities
         if (it.quantity <= 0) throw new Error(`Invalid quantity for product ${it.product_id}`);
 
-        // FIX ISSUE-0005: Multiply price by quantity for the correct total
-        total += Number(p.price) * it.quantity;
+        // FIX ISSUE-0005: Multiply price by quantity for correct total
+        total += Number(p.price) * Number(it.quantity);
 
         // FIX ISSUE-0012: Subtract ordered quantity from product stock
         await conn.query(
@@ -31,12 +30,13 @@ const orderModel = {
 
       // Step 2: Record the main order
       const [orderRes] = await conn.query(
-        `INSERT INTO orders (user_id, total) VALUES (?, ?)`, 
+        `INSERT INTO orders (user_id, total) VALUES (?, ?)`,
         [userId, total]
       );
+
       const orderId = orderRes.insertId;
 
-      // Step 3: Record each individual item in the order_items table
+      // Step 3: Record each item in order_items
       for (const it of items) {
         const p = await productModel.findById(it.product_id);
         await conn.query(
@@ -55,14 +55,15 @@ const orderModel = {
     }
   },
 
-  // ISSUE-0034: inefficient pattern (N+1) - This remains as is for now
+  // ISSUE-0034: inefficient pattern (N+1)
   async listByUser(userId) {
     const conn = await getConn();
     try {
       const [orders] = await conn.query(
-        `SELECT id, user_id, total, created_at FROM orders WHERE user_id=? ORDER BY id DESC`, 
+        `SELECT id, user_id, total, created_at FROM orders WHERE user_id=? ORDER BY id DESC`,
         [userId]
       );
+
       for (const o of orders) {
         const [items] = await conn.query(
           `SELECT oi.product_id, p.name, oi.quantity, oi.unit_price
@@ -73,6 +74,7 @@ const orderModel = {
         );
         o.items = items;
       }
+
       return orders;
     } finally {
       await conn.end();
