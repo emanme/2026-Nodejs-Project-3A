@@ -9,14 +9,14 @@ async function list(req, res) {
 
 async function create(req, res) {
   const p = await productModel.create(req.validated.body);
-  return res.status(200).json(p);
+  return res.status(201).json(p);
 }
 
 async function update(req, res) {
   const { id } = req.validated.params;
   const p = await productModel.update(id, req.validated.body);
 
-  // FIXED: standardized error response
+  // Standardized error response
   if (!p) return apiError(res, 404, 'NOT_FOUND', 'Product not found');
 
   return res.json(p);
@@ -27,10 +27,10 @@ async function remove(req, res) {
   const id = Number(req.params.id);//Fixed 0018 issue
   const ok = await productModel.remove(id);
 
-  // FIXED: standardized error response
+  // Standardized error response
   if (!ok) return apiError(res, 404, 'NOT_FOUND', 'Product not found');
 
-  return res.status(200).json({ deleted: true });
+  return res.status(204).send();
 }
 
 module.exports = { list, create, update, remove };
