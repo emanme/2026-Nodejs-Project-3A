@@ -17,13 +17,16 @@ const orderModel = {
         // ISSUE-0009: missing robust validation for orders in release
         if (it.quantity < 0) throw new Error(`Invalid quantity for product ${it.product_id}`);
 
-        // BUG: ignores quantity
-        total += Number(p.price);
+        // FIX ISSUE-0005: include quantity in total calculation
+        total += Number(p.price) * Number(it.quantity);
 
         // BUG: stock not updated
       }
 
-      const [orderRes] = await conn.query(`INSERT INTO orders (user_id, total) VALUES (?, ?)`, [userId, total]);
+      const [orderRes] = await conn.query(
+        `INSERT INTO orders (user_id, total) VALUES (?, ?)`,
+        [userId, total]
+      );
       const orderId = orderRes.insertId;
 
       for (const it of items) {
@@ -48,7 +51,11 @@ const orderModel = {
   async listByUser(userId) {
     const conn = await getConn();
     try {
-      const [orders] = await conn.query(`SELECT id, user_id, total, created_at FROM orders WHERE user_id=? ORDER BY id DESC`, [userId]);
+      const [orders] = await conn.query(
+        `SELECT id, user_id, total, created_at FROM orders WHERE user_id=? ORDER BY id DESC`,
+        [userId]
+      );
+
       for (const o of orders) {
         const [items] = await conn.query(
           `SELECT oi.product_id, p.name, oi.quantity, oi.unit_price
@@ -59,6 +66,7 @@ const orderModel = {
         );
         o.items = items;
       }
+
       return orders;
     } finally {
       await conn.end();
