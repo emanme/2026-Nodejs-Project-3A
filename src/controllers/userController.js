@@ -54,17 +54,14 @@ async function login(req, res) {
 
 // FIXED ISSUE-0006: Added try/catch block
 async function me(req, res) {
-  try {
-    const user = await userModel.findById(req.user.id);
 
-    if (!user)
-      return apiError(res, 404, 'NOT_FOUND', 'User not found');
+  // 1. Gamit og .select('-password_hash') para i-exclude ang field sa query pa lang
+  const user = await userModel.findById(req.user.id).select('-password_hash');
+  
+  if (!user) return apiError(res, 404, 'NOT_FOUND', 'User not found');
 
-    return res.json(user);
+  // 2. Direkta na nimo i-send ang user kay wala na man ni password sa sulod
+  return res.json(user);
 
-  } catch (e) {
-    return apiError(res, 500, 'SERVER_ERROR', e.message || 'Failed to fetch user');
-  }
-}
 
 module.exports = { register, login, me };
