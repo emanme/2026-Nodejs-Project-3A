@@ -28,8 +28,8 @@ const upsertSchema = z.object({
 });
 
 router.get('/', validate(listSchema), list);
-router.post('/', auth, validate(upsertSchema), create); // ISSUE-0004 fixed
-router.put('/:id', auth, validate(upsertSchema), update); // ISSUE-0004 fixed
+router.post('/', auth, validate(upsertSchema), create); //ISSUE-0004 fixed
+router.put('/:id', auth, validate(upsertSchema), update); //ISSUE-0004 fixed
 router.delete('/:id', validate(z.object({ params: z.object({ id: z.coerce.number().int().min(1) }) })), remove);
 
 module.exports = router;
