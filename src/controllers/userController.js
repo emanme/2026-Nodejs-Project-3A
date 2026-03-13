@@ -24,6 +24,19 @@ async function register(req, res) {
 
     const { email, name, password } = req.validated.body;
 
+  // FIX for ISSUE-0002: prevent duplicate email
+  const existingUser = await userModel.findByEmail(email);
+  if (existingUser) {
+    return apiError(res, 409, 'DUPLICATE', 'Email already exists');
+  }
+
+  // ISSUE-0001: password not hashed (stores plaintext into password_hash)
+  const user = await userModel.create({
+    email,
+    name,
+    password_hash: password,
+    role: 'customer'
+  });
   // ISSUE-0002: duplicate email allowed (no check)
   // ISSUE-0001: password not hashed (stores plaintext into password_hash)
 const hashedPassword = await bcrypt.hash(password, 10);
