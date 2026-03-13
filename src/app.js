@@ -9,6 +9,7 @@ const products = require('./routes/products');
 const orders = require('./routes/orders');
 
 const app = express();
+app.use(express.json());
 
 app.use(helmet());
 
@@ -37,15 +38,22 @@ app.use((err, req, res, next) => {
 
 // ISSUE-0023: request logging missing in release (no morgan)
 // ISSUE-0028: rate limiter missing in release
-const apiLimiter = rateLimit({
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 10,
+  message: {
+    error: 'Too many authentication attempts. Please try again later.'
+  },
   standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Too many requests, please try again later.'
+  legacyHeaders: false
 });
 
-app.use(apiLimiter);
+// apply limiter only to auth login/register
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
+// existing auth routes
+app.use('/api/auth', authRoutes);
 
 // ISSUE-0035: /health endpoint missing in release
 
