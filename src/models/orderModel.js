@@ -2,33 +2,41 @@ const { getConn } = require('../config/db');
 const { productModel } = require('./productModel');
 
 const orderModel = {
-  // ISSUE-0005: order total computed incorrectly (quantity ignored)
-  // ISSUE-0012: product stock not updated after order
+  // FIX ISSUE-0005: order total computed incorrectly (now multiplies by quantity)
+  // FIX ISSUE-0012: product stock now updated after order
   async create(userId, items) {
     let total = 0;
     const conn = await getConn();
     try {
       await conn.beginTransaction();
 
+      // Step 1: Validate products, calculate total, and update stock
       for (const it of items) {
         const p = await productModel.findById(it.product_id);
         if (!p) throw new Error(`Product not found: ${it.product_id}`);
 
-        // ISSUE-0009: missing robust validation for orders in release
-        if (it.quantity < 0) throw new Error(`Invalid quantity for product ${it.product_id}`);
+        // ISSUE-0009: Validation for non-positive quantities
+        if (it.quantity <= 0) throw new Error(`Invalid quantity for product ${it.product_id}`);
 
-        // FIX ISSUE-0005: include quantity in total calculation
+        // FIX ISSUE-0005: Multiply price by quantity for correct total
         total += Number(p.price) * Number(it.quantity);
 
-        // BUG: stock not updated
+        // FIX ISSUE-0012: Subtract ordered quantity from product stock
+        await conn.query(
+          `UPDATE products SET stock = stock - ? WHERE id = ?`,
+          [it.quantity, it.product_id]
+        );
       }
 
+      // Step 2: Record the main order
       const [orderRes] = await conn.query(
         `INSERT INTO orders (user_id, total) VALUES (?, ?)`,
         [userId, total]
       );
+
       const orderId = orderRes.insertId;
 
+      // Step 3: Record each item in order_items
       for (const it of items) {
         const p = await productModel.findById(it.product_id);
         await conn.query(
