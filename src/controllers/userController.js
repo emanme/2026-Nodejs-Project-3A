@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require('bcrypt');
 const { apiError } = require('../utils/errors');
 
 const { userModel } = require('../models/userModel');
@@ -24,17 +24,10 @@ async function register(req, res) {
 
     const { email, name, password } = req.validated.body;
 
-    const user = await userModel.create({
-
-      email,
-
-      name,
-
-      password_hash: password,
-
-      role: 'customer'
-
-    });
+  // ISSUE-0002: duplicate email allowed (no check)
+  // ISSUE-0001: password not hashed (stores plaintext into password_hash)
+const hashedPassword = await bcrypt.hash(password, 10);
+const user = await userModel.create({ email, name, password_hash: hashedPassword, role: 'customer' });
 
     return res.status(201).json(user);
 
