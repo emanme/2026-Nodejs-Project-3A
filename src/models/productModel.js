@@ -1,22 +1,35 @@
 const { getConn } = require('../config/db');
 
 const productModel = {
-  // ISSUE-0014: no pagination in release (ignores page/limit)
-  async list({ page, limit, q }) {
+  // ISSUE-0014 FIX: Added pagination logic
+  async list({ page = 1, limit = 10, q }) {
     const conn = await getConn();
     try {
+      const numPage = parseInt(page, 10) || 1;
+      const numLimit = parseInt(limit, 10) || 10;
+      const offset = (numPage - 1) * numLimit;
+
       const like = `%${q}%`;
       const where = q ? 'WHERE name LIKE ? OR category LIKE ?' : '';
-      const params = q ? [like, like] : [];
+      
+      const countParams = q ? [like, like] : [];
+      const [countRows] = await conn.query(
+        `SELECT COUNT(*) as count FROM products ${where}`, 
+        countParams
+      );
+      const totalItems = countRows[0].count;
+
+      const params = q ? [like, like, numLimit, offset] : [numLimit, offset];
 
       const [rows] = await conn.query(
         `SELECT id, name, category, price, stock, image_url, created_at
          FROM products ${where}
-         ORDER BY id DESC`,
+         ORDER BY id DESC
+         LIMIT ? OFFSET ?`,
         params
       );
 
-      return { page, limit, total: rows.length, items: rows };
+      return { page: numPage, limit: numLimit, total: totalItems, items: rows };
     } finally {
       await conn.end();
     }
