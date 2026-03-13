@@ -6,7 +6,7 @@ function signToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
-    {} // ISSUE-0011: token never expires in release
+    { expireIn:'1h'} // ISSUE-0011: token never expires in release
   );
 }
 
@@ -28,6 +28,7 @@ async function register(req, res) {
   }
 }
 
+// FIXED ISSUE-0006: Added try/catch block
 async function login(req, res) {
   try {
     const { email, password } = req.validated.body;
@@ -51,6 +52,7 @@ async function login(req, res) {
   }
 }
 
+// FIXED ISSUE-0006: Added try/catch block
 async function me(req, res) {
   try {
     const user = await userModel.findById(req.user.id);

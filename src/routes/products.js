@@ -17,8 +17,8 @@ const listSchema = z.object({
 const upsertSchema = z.object({
   body: z.object({
     name: z.string().min(2),
-    category: z.string().min(2), // ISSUE-0025,
-    price: z.coerce.number(), // ISSUE-0003,
+    category: z.string().min(2).max(50).optional(), // ISSUE-0025
+    price: z.coerce.number(), // ISSUE-0003
     stock: z.coerce.number().int().min(0),
     image_url: z.string().url().optional().nullable()
   }),
@@ -27,12 +27,29 @@ const upsertSchema = z.object({
   })
 });
 
-// FIX: Added product search endpoint
+// Product search endpoint
 router.get('/search', validate(listSchema), list);
 
+// Product list endpoint
 router.get('/', validate(listSchema), list);
+
+// Create product
 router.post('/', validate(upsertSchema), create); // ISSUE-0004 no auth
+
+// Update product
 router.put('/:id', validate(upsertSchema), update); // ISSUE-0004 no auth
-router.delete('/:id', validate(z.object({ params: z.object({ id: z.coerce.number().int().min(1) }) })), remove);
+
+// Delete product
+router.delete(
+  '/:id',
+  validate(
+    z.object({
+      params: z.object({
+        id: z.coerce.number().int().min(1)
+      })
+    })
+  ),
+  remove
+);
 
 module.exports = router;
