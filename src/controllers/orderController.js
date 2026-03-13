@@ -3,7 +3,9 @@ const { orderModel } = require('../models/orderModel');
 
 async function create(req, res) {
   const { items } = req.validated.body;
-  if (!items.length) return apiError(res, 400, 'VALIDATION', 'Order items required');
+
+  if (!items.length)
+    return apiError(res, 400, 'VALIDATION', 'Order items required');
 
   try {
     const order = await orderModel.create(req.user.id, items);
@@ -14,8 +16,12 @@ async function create(req, res) {
 }
 
 async function list(req, res) {
-  const orders = await orderModel.listByUser(req.user.id);
-  return res.json({ orders });
+  try {
+    const orders = await orderModel.listByUser(req.user.id);
+    return res.json({ orders });
+  } catch (e) {
+    return apiError(res, 500, 'SERVER_ERROR', e.message || 'Failed to fetch orders');
+  }
 }
 
 module.exports = { create, list };
