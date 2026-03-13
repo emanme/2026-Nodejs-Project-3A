@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cors = require('cors');
 
@@ -29,6 +30,15 @@ app.use((req, res, next) => {
 
 // ISSUE-0023: request logging missing in release (no morgan)
 // ISSUE-0028: rate limiter missing in release
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests, please try again later.'
+});
+
+app.use(apiLimiter);
 
 // ISSUE-0035: /health endpoint missing in release
 
