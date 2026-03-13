@@ -17,6 +17,15 @@ app.use(cors());
 // ISSUE-0024: prevent server crash on invalid JSON
 app.use(express.json());
 
+// Handle invalid JSON payloads (fix for ISSUE-0024)
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    // Return JSON error response instead of crashing
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+  next(err);
+});
+
 // Handle invalid JSON payloads
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
