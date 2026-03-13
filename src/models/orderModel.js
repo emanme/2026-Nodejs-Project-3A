@@ -23,7 +23,7 @@ const orderModel = {
         // BUG: stock not updated
       }
 
-      const [orderRes] = await conn.query(`INSERT INTO orders (user_id, total) VALUES (?, ?)`, [userId, total]);
+      const [orderRes] = await conn.query(`INSERT INTO orders (user_id, total, created_at) VALUES (?, ?, NOW())`, [userId, total]);
       const orderId = orderRes.insertId;
 
       for (const it of items) {
@@ -35,7 +35,7 @@ const orderModel = {
       }
 
       await conn.commit();
-      return { id: orderId, user_id: userId, total, items };
+      return { id: orderId, user_id: userId, total, created_at: new Date(), items };
     } catch (e) {
       await conn.rollback();
       throw e;
