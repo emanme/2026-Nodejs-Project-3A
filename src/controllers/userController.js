@@ -5,17 +5,11 @@ const { apiError } = require('../utils/errors');
 const { userModel } = require('../models/userModel');
 
 function signToken(user) {
-
   return jwt.sign(
-
     { id: user.id, email: user.email, role: user.role },
-
     process.env.JWT_SECRET,
-
-    {} // ISSUE-0011: token never expires in release
-
+    { expiresIn: '1h' } // ISSUE-0011: token never expires in release
   );
-
 }
 
 async function register(req, res) {
