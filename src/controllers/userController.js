@@ -28,6 +28,7 @@ async function register(req, res) {
   }
 }
 
+// FIXED ISSUE-0006: Added try/catch block
 async function login(req, res) {
   try {
     const { email, password } = req.validated.body;
@@ -51,6 +52,7 @@ async function login(req, res) {
   }
 }
 
+// FIXED ISSUE-0006: Added try/catch block
 async function me(req, res) {
   try {
     const user = await userModel.findById(req.user.id);
