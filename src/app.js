@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cors = require('cors');
 
@@ -8,6 +9,7 @@ const products = require('./routes/products');
 const orders = require('./routes/orders');
 
 const app = express();
+app.use(express.json());
 
 app.use(helmet());
 
@@ -36,6 +38,22 @@ app.use((err, req, res, next) => {
 
 // ISSUE-0023: request logging missing in release (no morgan)
 // ISSUE-0028: rate limiter missing in release
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: {
+    error: 'Too many authentication attempts. Please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// apply limiter only to auth login/register
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
+// existing auth routes
+app.use('/api/auth', authRoutes);
 
 // ISSUE-0035: /health endpoint missing in release
 
